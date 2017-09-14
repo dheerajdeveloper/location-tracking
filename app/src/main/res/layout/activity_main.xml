@@ -9,10 +9,9 @@
     <TextView
         android:id="@+id/longitude_text"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="58dp"
         android:layout_marginLeft="230dp"
         android:layout_marginStart="230dp"
-        android:layout_weight="3.09"
         android:text="TextView"
         app:layout_constraintLeft_toLeftOf="parent"
         tools:layout_editor_absoluteY="248dp" />
@@ -21,18 +20,18 @@
         android:id="@+id/last_update_time_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
+        android:layout_marginLeft="-31dp"
         android:layout_marginStart="16dp"
-        android:layout_weight="1"
+        android:layout_weight="3.05"
         android:text="TextView"
         app:layout_constraintLeft_toLeftOf="parent"
-        tools:layout_editor_absoluteY="248dp" />
+        tools:layout_editor_absoluteY="212dp" />
 
     <TextView
         android:id="@+id/latitude_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="288dp"
+        android:layout_marginLeft="230dp"
         android:layout_marginStart="230dp"
         android:layout_weight="1"
         android:text="TextView"
@@ -44,7 +43,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="57dp"
         android:onClick="startSendingLocation"
         android:text="Start_Sending_Location"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -61,5 +60,35 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintHorizontal_bias="0.049"
         android:layout_marginBottom="26dp" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="211dp"
+        android:layout_height="48dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:onClick="fetchAddressButtonHandler"
+        android:text="Get Current Address"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:layout_width="367dp"
+        android:layout_height="163dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="42dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintHorizontal_bias="0.529">
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="TextView" />
+    </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

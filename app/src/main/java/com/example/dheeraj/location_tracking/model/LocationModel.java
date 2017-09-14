@@ -1,14 +1,12 @@
 package com.example.dheeraj.location_tracking.model;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * Created by dheeraj on 14/09/17.
  */
 
 @Data
-@NoArgsConstructor
 public class LocationModel {
 
     long id;
@@ -20,6 +18,9 @@ public class LocationModel {
     String longitude;
 
     String locationtime;
+
+    public LocationModel() {
+    }
 
     public LocationModel(long userId, String latitude, String longitude, String locationtime) {
         this.userId = userId;

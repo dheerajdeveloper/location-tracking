@@ -1,12 +1,18 @@
 package com.example.dheeraj.location_tracking;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
+import android.os.ResultReceiver;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -58,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
     private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    private boolean mAddressRequested;
 
     /**
      * The fastest rate for active location updates. Exact. Updates will never be more frequent
@@ -108,17 +115,39 @@ public class MainActivity extends AppCompatActivity {
     private TextView mLastUpdateTimeTextView;
     private Boolean mRequestingLocationUpdates;
 
+    /**
+     * Represents a geographical location.
+     */
+    private Location mLastLocation;
 
     // Labels.
     private String mLatitudeLabel;
     private String mLongitudeLabel;
     private String mLastUpdateTimeLabel;
 
+    /**
+     * The formatted location address.
+     */
+    private String mAddressOutput;
+
+    /**
+     * Receiver registered with this activity to get the response from FetchAddressIntentService.
+     */
+    private AddressResultReceiver mResultReceiver;
+
+    /**
+     * Displays the location address.
+     */
+    private TextView mLocationAddressTextView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mRequestingLocationUpdates = false;
+        mResultReceiver = new AddressResultReceiver(new Handler());
+
+        mLocationAddressTextView = (TextView) findViewById(R.id.textView6);
 
 
         // Set labels.
@@ -327,23 +356,24 @@ public class MainActivity extends AppCompatActivity {
     private class HttpRequestTask extends AsyncTask<Void, Void, LocationModel> {
         @Override
         protected LocationModel doInBackground(Void... params) {
+            LocationModel locationModel = new LocationModel();
             try {
                 final String url = "http://35.154.229.180:8090/user-registration/location/add";
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-                LocationModel locationModelRequest = new LocationModel(1,
+                locationModel = new LocationModel(1,
                         Double.toString(mCurrentLocation.getLatitude()),
                         Double.toString(mCurrentLocation.getLongitude()),
                         DateUtil.getCurrentTimeInIsoFormat());
-                LocationModel locationModelResponse = restTemplate.postForObject(url,
-                        locationModelRequest,
+
+               locationModel =  restTemplate.postForObject(url,
+                        locationModel,
                         LocationModel.class);
-                return locationModelResponse;
             } catch (Exception e) {
                 Log.e("MainActivity", e.getMessage(), e);
             }
 
-            return null;
+            return locationModel;
         }
 
         @Override
@@ -358,5 +388,173 @@ public class MainActivity extends AppCompatActivity {
 //            greetingContentText.setText(greeting.getContent());
         }
 
+    }
+
+    public void fetchAddressButtonHandler(View view) {
+        startIntentService();
+
+//        updateUIWidgets();
+    }
+
+
+    /**
+     * Creates an intent, adds location data to it as an extra, and starts the intent service for
+     * fetching an address.
+     */
+    private void startIntentService() {
+        // Create an intent for passing to the intent service responsible for fetching the address.
+        Intent intent = new Intent(this, FetchAddressIntentService.class);
+
+        // Pass the result receiver as an extra to the service.
+        intent.putExtra(Constants.RECEIVER, mResultReceiver);
+
+        // Pass the location data as an extra to the service.
+        intent.putExtra(Constants.LOCATION_DATA_EXTRA, mCurrentLocation);
+
+        // Start the service. If the service isn't already running, it is instantiated and started
+        // (creating a process for it if needed); if it is running then it remains running. The
+        // service kills itself automatically once all intents are processed.
+        startService(intent);
+    }
+
+
+    /**
+     * Receiver for data sent from FetchAddressIntentService.
+     */
+    private class AddressResultReceiver extends ResultReceiver {
+        AddressResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        /**
+         * Receives data sent from FetchAddressIntentService and updates the UI in MainActivity.
+         */
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+
+            // Display the address string or an error message sent from the intent service.
+            mAddressOutput = resultData.getString(Constants.RESULT_DATA_KEY);
+            displayAddressOutput();
+
+            // Show a toast message if an address was found.
+            if (resultCode == Constants.SUCCESS_RESULT) {
+                showToast(getString(R.string.address_found));
+            }
+
+            // Reset. Enable the Fetch Address button and stop showing the progress bar.
+            mAddressRequested = false;
+//            updateUIWidgets();
+        }
+    }
+
+
+    /**
+     * Shows a toast with the given text.
+     */
+    private void showToast(String text) {
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+    }
+
+
+    /**
+     * Shows a {@link Snackbar} using {@code text}.
+     *
+     * @param text The Snackbar text.
+     */
+    private void showSnackbar(final String text) {
+        View container = findViewById(android.R.id.content);
+        if (container != null) {
+            Snackbar.make(container, text, Snackbar.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     * Updates the address in the UI.
+     */
+    private void displayAddressOutput() {
+        mLocationAddressTextView.setText(mAddressOutput);
+    }
+
+    /**
+     * Callback received when a permissions request has been completed.
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        Log.i(TAG, "onRequestPermissionResult");
+        if (requestCode == REQUEST_PERMISSIONS_REQUEST_CODE) {
+            if (grantResults.length <= 0) {
+                // If user interaction was interrupted, the permission request is cancelled and you
+                // receive empty arrays.
+                Log.i(TAG, "User interaction was cancelled.");
+            } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted.
+                getAddress();
+            } else {
+                // Permission denied.
+
+                // Notify the user via a SnackBar that they have rejected a core permission for the
+                // app, which makes the Activity useless. In a real app, core permissions would
+                // typically be best requested during a welcome-screen flow.
+
+                // Additionally, it is important to remember that a permission might have been
+                // rejected without asking the user for permission (device policy or "Never ask
+                // again" prompts). Therefore, a user interface affordance is typically implemented
+                // when permissions are denied. Otherwise, your app could appear unresponsive to
+                // touches or interactions which have required permissions.
+                showSnackbar(R.string.permission_denied_explanation, R.string.settings,
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                // Build intent that displays the App settings screen.
+                                Intent intent = new Intent();
+                                intent.setAction(
+                                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                Uri uri = Uri.fromParts("package",
+                                        BuildConfig.APPLICATION_ID, null);
+                                intent.setData(uri);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                            }
+                        });
+            }
+        }
+
+
+    }
+
+    @SuppressWarnings("MissingPermission")
+    private void getAddress() {
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        if (location == null) {
+                            Log.w(TAG, "onSuccess:null");
+                            return;
+                        }
+
+                        mLastLocation = location;
+
+                        // Determine whether a Geocoder is available.
+                        if (!Geocoder.isPresent()) {
+                            showSnackbar(getString(R.string.no_geocoder_available));
+                            return;
+                        }
+
+                        // If the user pressed the fetch address button before we had the location,
+                        // this will be set to true indicating that we should kick off the intent
+                        // service after fetching the location.
+                        if (mAddressRequested) {
+                            startIntentService();
+                        }
+                    }
+                })
+                .addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "getLastLocation:onFailure", e);
+                    }
+                });
     }
 }
