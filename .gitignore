@@ -21,3 +21,5 @@ bin-release/
 .idea/
 location-tracking.iml
 build
+app/app.iml
+app/app.iml
