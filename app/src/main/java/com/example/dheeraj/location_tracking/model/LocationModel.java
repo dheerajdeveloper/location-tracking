@@ -1,11 +1,14 @@
 package com.example.dheeraj.location_tracking.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.ToString;
 
 /**
  * Created by dheeraj on 14/09/17.
  */
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @ToString
 public class LocationModel {
 

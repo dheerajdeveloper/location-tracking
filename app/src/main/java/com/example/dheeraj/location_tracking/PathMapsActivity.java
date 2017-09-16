@@ -10,16 +10,16 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class PathMapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -63,35 +63,39 @@ public class PathMapsActivity extends FragmentActivity implements OnMapReadyCall
     /**
      * A class to parse the Google Places in JSON format
      */
-    private class ParserTask extends AsyncTask<String, Integer, List<LocationModel>> {
+    private class ParserTask extends AsyncTask<String, Integer, LocationModel[]> {
 
         // Parsing the data in non-ui thread
         @Override
-        protected List<LocationModel> doInBackground(String... jsonData) {
+        protected LocationModel[] doInBackground(String... jsonData) {
 
-            ArrayList<LocationModel> modelArrayList = new ArrayList<>();
-
-            final String url = "http://35.154.229.180:8090/user-registration/location/getLocationForUserForTimeRange" +
-                    "?userId=1&starttime=2017-09-15%2018:30:00&endtime=2017-09-15%2021:30:00";
+            LocationModel locationModel[] = new LocationModel[0];
+            final String url = "http://35.154.229.180:8090/user-registration/location/getLocationForUserForTimeRange?userId=1&starttime=2017-09-15 18:30:00&endtime=2017-09-15 21:30:00";
             RestTemplate restTemplate = new RestTemplate();
-            restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-            try {
-                Object[] locationModelList = restTemplate.getForObject(url,
-                        Object[].class);
 
-//            if (locationModelList == null || locationModelList.length == 0) {
-//                return new ArrayList<>();
-//            }
-            } catch(Exception e){
-                System.out.println(e);
+            try {
+                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+
+                ResponseEntity<LocationModel[]> responseEntity = restTemplate.getForEntity(url, LocationModel[].class);
+                LocationModel[] objects = responseEntity.getBody();
+
+                if (objects != null && objects.length > 0) {
+                    locationModel = objects;
+                }
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            return null;//Arrays.asList(locationModelList);
+
+
+            return locationModel;
         }
 
         @SuppressWarnings("MissingPermission")
         @Override
-        protected void onPostExecute(List<LocationModel> locationModelList) {
-            if (CollectionUtils.isEmpty(locationModelList)) {
+        protected void onPostExecute(LocationModel[] locationModelList) {
+            if (locationModelList == null || locationModelList.length == 0) {
                 return;
             }
 
@@ -103,10 +107,23 @@ public class PathMapsActivity extends FragmentActivity implements OnMapReadyCall
 
             points = new ArrayList();
             lineOptions = new PolylineOptions();
-            for (LocationModel locationModel : locationModelList) {
 
+            LatLng startLocation = null;
+            LatLng endLocation = null;
+
+
+            for (int i = 0; i < locationModelList.length; i++) {
+
+                LocationModel locationModel = locationModelList[i];
 
                 LatLng currLoc = new LatLng(Double.parseDouble(locationModel.getLatitude()), Double.parseDouble(locationModel.getLongitude()));
+                if (i == 0) {
+                    endLocation = currLoc;
+                }
+
+                if (i == locationModelList.length - 1) {
+                    startLocation = currLoc;
+                }
 
                 points.add(currLoc);
 
@@ -117,12 +134,10 @@ public class PathMapsActivity extends FragmentActivity implements OnMapReadyCall
             lineOptions.width(12);
             lineOptions.color(Color.RED);
             lineOptions.geodesic(true);
-// Drawing polyline in the Google Map for the i-th route
             mMap.addPolyline(lineOptions);
-//            // Add a marker in Sydney and move the camera
-//            LatLng currLoc = new LatLng(Double.parseDouble(locationModel.getLatitude()), Double.parseDouble(locationModel.getLongitude()));
-//            mMap.addMarker(new MarkerOptions().position(currLoc).title("Current Location"));
-//            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currLoc, DEFAULT_ZOOM));
+            mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)).position(startLocation).title("Start Location"));
+            mMap.addMarker(new MarkerOptions().position(endLocation).title("End Location"));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(endLocation, DEFAULT_ZOOM));
         }
     }
 }
