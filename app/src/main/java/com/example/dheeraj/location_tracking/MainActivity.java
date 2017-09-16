@@ -19,6 +19,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,6 +48,7 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -586,6 +588,14 @@ public class MainActivity extends AppCompatActivity {
 
     public void showPath(View view) {
         Intent intent = new Intent(this, PathMapsActivity.class);
+        startActivity(intent);
+    }
+    public void showNMinsPath(View view) {
+        Intent intent = new Intent(this, NMinsMapsActivity.class);
+        EditText editText = (EditText) findViewById(R.id.editText2);
+        String message = editText.getText().toString();
+        intent.putExtra(EXTRA_MESSAGE, message);
+
         startActivity(intent);
     }
 }
