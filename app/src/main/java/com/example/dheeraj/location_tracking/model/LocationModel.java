@@ -1,9 +1,12 @@
 package com.example.dheeraj.location_tracking.model;
 
+import lombok.ToString;
+
 /**
  * Created by dheeraj on 14/09/17.
  */
 
+@ToString
 public class LocationModel {
 
     long id;
