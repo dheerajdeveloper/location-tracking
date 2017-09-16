@@ -108,6 +108,12 @@ public class MainActivity extends AppCompatActivity {
      * Represents a geographical location.
      */
     private Location mCurrentLocation;
+
+    /*
+    used to store the last location send in the api
+     */
+    private Location prevUpdatedLocation;
+
     private String mLastUpdateTime;
 
     private TextView mLatitudeTextView;
@@ -229,7 +235,8 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         if (checkPermissions()) {
             startLocationUpdates();
-        } else if (!checkPermissions()) {
+            startIntentService();
+        } else {
             requestPermissions();
         }
 
@@ -253,35 +260,6 @@ public class MainActivity extends AppCompatActivity {
                 .setAction(getString(actionStringId), listener).show();
     }
 
-    private void requestPermissions() {
-        boolean shouldProvideRationale =
-                ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        Manifest.permission.ACCESS_FINE_LOCATION);
-
-        // Provide an additional rationale to the user. This would happen if the user denied the
-        // request previously, but didn't check the "Don't ask again" checkbox.
-        if (shouldProvideRationale) {
-            Log.i(TAG, "Displaying permission rationale to provide additional context.");
-            showSnackbar(R.string.permission_rationale,
-                    android.R.string.ok, new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            // Request permission
-                            ActivityCompat.requestPermissions(MainActivity.this,
-                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                                    REQUEST_PERMISSIONS_REQUEST_CODE);
-                        }
-                    });
-        } else {
-            Log.i(TAG, "Requesting permission");
-            // Request permission. It's possible this can be auto answered if device policy
-            // sets the permission in a given state or the user denied the permission
-            // previously and checked "Never ask again".
-            ActivityCompat.requestPermissions(MainActivity.this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_PERMISSIONS_REQUEST_CODE);
-        }
-    }
 
     private void startLocationUpdates() {
         // Begin by checking if the device has the necessary location settings.
@@ -358,17 +336,25 @@ public class MainActivity extends AppCompatActivity {
         protected LocationModel doInBackground(Void... params) {
             LocationModel locationModel = new LocationModel();
             try {
-                final String url = "http://35.154.229.180:8090/user-registration/location/add";
-                RestTemplate restTemplate = new RestTemplate();
-                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+
                 locationModel = new LocationModel(1,
                         Double.toString(mCurrentLocation.getLatitude()),
                         Double.toString(mCurrentLocation.getLongitude()),
                         DateUtil.getCurrentTimeInIsoFormat());
 
-               locationModel =  restTemplate.postForObject(url,
+                if(prevUpdatedLocation != null &&
+                        prevUpdatedLocation.getLatitude() == mCurrentLocation.getLatitude() &&
+                        prevUpdatedLocation.getLongitude() == mCurrentLocation.getLongitude()){
+                    return locationModel;
+                }
+
+                final String url = "http://35.154.229.180:8090/user-registration/location/add";
+                RestTemplate restTemplate = new RestTemplate();
+                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+                locationModel =  restTemplate.postForObject(url,
                         locationModel,
                         LocationModel.class);
+                prevUpdatedLocation = mCurrentLocation;
             } catch (Exception e) {
                 Log.e("MainActivity", e.getMessage(), e);
             }
@@ -556,5 +542,45 @@ public class MainActivity extends AppCompatActivity {
                         Log.w(TAG, "getLastLocation:onFailure", e);
                     }
                 });
+    }
+
+
+    private void requestPermissions() {
+        boolean shouldProvideRationale =
+                ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        Manifest.permission.ACCESS_FINE_LOCATION);
+
+        // Provide an additional rationale to the user. This would happen if the user denied the
+        // request previously, but didn't check the "Don't ask again" checkbox.
+        if (shouldProvideRationale) {
+            Log.i(TAG, "Displaying permission rationale to provide additional context.");
+            showSnackbar(R.string.permission_rationale,
+                    android.R.string.ok, new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            // Request permission
+                            ActivityCompat.requestPermissions(MainActivity.this,
+                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                    REQUEST_PERMISSIONS_REQUEST_CODE);
+                        }
+                    });
+        } else {
+            Log.i(TAG, "Requesting permission");
+            // Request permission. It's possible this can be auto answered if device policy
+            // sets the permission in a given state or the user denied the permission
+            // previously and checked "Never ask again".
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_PERMISSIONS_REQUEST_CODE);
+        }
+    }
+
+
+    /**
+     * Called when the user taps the Send button
+     */
+    public void sendMessageForMap(View view) {
+        Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
     }
 }

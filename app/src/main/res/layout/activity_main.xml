@@ -17,12 +17,13 @@
         android:layout_marginEnd="3dp"
         app:layout_constraintRight_toRightOf="parent"
         android:id="@+id/constraintLayout"
-        android:layout_marginTop="157dp"
+        android:layout_marginTop="211dp"
         tools:layout_constraintLeft_creator="1"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_marginLeft="3dp"
-        android:layout_marginRight="3dp">
+        android:layout_marginRight="3dp"
+        app:layout_constraintHorizontal_bias="0.0">
 
         <TextView
             android:id="@+id/textView5"
@@ -111,7 +112,7 @@
     </android.support.constraint.ConstraintLayout>
 
     <android.support.constraint.ConstraintLayout
-        android:layout_width="372dp"
+        android:layout_width="611dp"
         android:layout_height="0dp"
         tools:layout_constraintTop_creator="1"
         tools:layout_constraintBottom_creator="1"
@@ -119,10 +120,25 @@
         android:layout_marginStart="6dp"
         android:layout_marginTop="4dp"
         tools:layout_constraintLeft_creator="1"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="7dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginLeft="6dp">
+        android:layout_marginLeft="6dp"
+        app:layout_constraintVertical_bias="0.0">
+
+        <Button
+            android:id="@+id/button3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="19dp"
+            android:layout_marginStart="19dp"
+            android:layout_marginTop="144dp"
+            android:onClick="sendMessageForMap"
+            android:text="Map"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/button2"
+            tools:layout_constraintLeft_creator="1"
+            tools:layout_constraintTop_creator="1" />
 
         <Button
             android:id="@+id/button2"
