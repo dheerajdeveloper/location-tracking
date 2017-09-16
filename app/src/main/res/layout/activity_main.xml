@@ -32,8 +32,8 @@
 
         <Button
             android:id="@+id/button"
-            android:layout_width="0dp"
-            android:layout_height="46dp"
+            android:layout_width="352dp"
+            android:layout_height="37dp"
             android:onClick="startSendingLocation"
             android:text="Start_Sending_Location"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -51,10 +51,10 @@
         <Button
             android:id="@+id/button2"
             android:layout_width="0dp"
-            android:layout_height="47dp"
+            android:layout_height="48dp"
             android:onClick="fetchAddressButtonHandler"
             android:text="Get Current Address"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="0dp"
             app:layout_constraintTop_toBottomOf="@+id/button"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
@@ -63,13 +63,14 @@
             android:layout_marginEnd="8dp"
             tools:layout_constraintLeft_creator="1"
             android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp" />
+            android:layout_marginRight="8dp"
+            app:layout_constraintHorizontal_bias="0.0" />
 
         <Button
             android:id="@+id/button3"
-            android:layout_width="0dp"
-            android:layout_height="47dp"
-            android:layout_marginTop="8dp"
+            android:layout_width="354dp"
+            android:layout_height="38dp"
+            android:layout_marginTop="0dp"
             android:onClick="sendMessageForMap"
             android:text="Current Location Map"
             app:layout_constraintLeft_toLeftOf="parent"
@@ -84,26 +85,39 @@
 
         <Button
             android:id="@+id/button6"
-            android:layout_width="355dp"
-            android:layout_height="39dp"
-            android:layout_marginBottom="8dp"
+            android:layout_width="348dp"
+            android:layout_height="37dp"
             android:layout_marginEnd="8dp"
             android:layout_marginLeft="8dp"
             android:layout_marginRight="8dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
             android:onClick="showPath"
             android:text="Show Path"
-            app:layout_constraintBottom_toTopOf="@+id/latitude_text"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button3"
-            app:layout_constraintVertical_bias="0.0"
-            tools:layout_constraintBottom_creator="1"
             tools:layout_constraintLeft_creator="1"
             tools:layout_constraintRight_creator="1"
-            tools:layout_constraintTop_creator="1"
-            app:layout_constraintHorizontal_bias="0.0" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.286" />
+
+        <EditText
+            android:id="@+id/editText2"
+            android:layout_width="165dp"
+            android:layout_height="54dp"
+            android:ems="10"
+            android:inputType="number"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/latitude_text"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@+id/button6"
+            app:layout_constraintRight_toLeftOf="@+id/guideline"
+            android:layout_marginRight="-1dp"
+            app:layout_constraintVertical_bias="0.714"
+            android:layout_marginLeft="8dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            tools:layout_editor_absoluteY="169dp"
+            tools:layout_editor_absoluteX="9dp" />
 
         <TextView
             android:id="@+id/latitude_text"
@@ -111,8 +125,8 @@
             android:layout_height="27dp"
             android:text="Latitude"
             app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="254dp"
-            app:layout_constraintLeft_toLeftOf="@+id/longitude_text" />
+            app:layout_constraintLeft_toLeftOf="@+id/longitude_text"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/longitude_text"
@@ -166,8 +180,34 @@
             android:layout_marginBottom="8dp"
             tools:layout_constraintRight_creator="1"
             tools:layout_constraintLeft_creator="1"
-            app:layout_constraintVertical_bias="0.627"
-            tools:layout_editor_absoluteX="7dp" />
+            app:layout_constraintVertical_bias="0.627" />
+
+        <android.support.constraint.Guideline
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/guideline"
+            android:orientation="vertical"
+            app:layout_constraintGuide_end="186dp"
+            tools:layout_editor_absoluteY="89dp"
+            tools:layout_editor_absoluteX="186dp" />
+
+        <Button
+            android:id="@+id/button4"
+            android:layout_width="147dp"
+            android:layout_height="35dp"
+            android:layout_marginBottom="0dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Last N Min"
+            app:layout_constraintBottom_toTopOf="@+id/latitude_text"
+            app:layout_constraintHorizontal_bias="0.652"
+            app:layout_constraintLeft_toLeftOf="@+id/guideline"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/button6"
+            app:layout_constraintVertical_bias="0.0"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp" />
 
     </android.support.constraint.ConstraintLayout>
 
