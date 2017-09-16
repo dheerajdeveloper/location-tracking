@@ -44,7 +44,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -118,9 +117,6 @@ public class MainActivity extends AppCompatActivity {
 
     private String mLastUpdateTime;
 
-    private TextView mLatitudeTextView;
-    private TextView mLongitudeTextView;
-    private TextView mLastUpdateTimeTextView;
     private Boolean mRequestingLocationUpdates;
 
     /**
@@ -162,10 +158,6 @@ public class MainActivity extends AppCompatActivity {
         mLatitudeLabel = getResources().getString(R.string.latitude_label);
         mLongitudeLabel = getResources().getString(R.string.longitude_label);
         mLastUpdateTimeLabel = getResources().getString(R.string.last_update_time_label);
-
-        mLatitudeTextView = (TextView) findViewById(R.id.latitude_text);
-        mLongitudeTextView = (TextView) findViewById(R.id.longitude_text);
-        mLastUpdateTimeTextView = (TextView) findViewById(R.id.last_update_time_text);
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mSettingsClient = LocationServices.getSettingsClient(this);
@@ -221,14 +213,6 @@ public class MainActivity extends AppCompatActivity {
      * Sets the value of the UI fields for the location latitude, longitude and last update time.
      */
     private void updateLocationUI() {
-        if (mCurrentLocation != null) {
-            mLatitudeTextView.setText(String.format(Locale.ENGLISH, "%s: %f", mLatitudeLabel,
-                    mCurrentLocation.getLatitude()));
-            mLongitudeTextView.setText(String.format(Locale.ENGLISH, "%s: %f", mLongitudeLabel,
-                    mCurrentLocation.getLongitude()));
-            mLastUpdateTimeTextView.setText(String.format(Locale.ENGLISH, "%s: %s",
-                    mLastUpdateTimeLabel, mLastUpdateTime));
-        }
     }
 
 
@@ -366,14 +350,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(LocationModel locationModel) {
-            TextView textView = (TextView) findViewById(R.id.textView5);
-            textView.setText(locationModel.toString());
-
-
-//            TextView greetingIdText = (TextView) findViewById(R.id.id_value);
-//            TextView greetingContentText = (TextView) findViewById(R.id.content_value);
-//            greetingIdText.setText(greeting.getId());
-//            greetingContentText.setText(greeting.getContent());
         }
 
     }
