@@ -1,15 +1,52 @@
 package com.example.dheeraj.location_tracking.model;
 
-import lombok.Data;
-
 /**
  * Created by dheeraj on 14/09/17.
  */
 
-@Data
 public class LocationModel {
 
     long id;
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    public long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(long userId) {
+        this.userId = userId;
+    }
+
+    public String getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(String latitude) {
+        this.latitude = latitude;
+    }
+
+    public String getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(String longitude) {
+        this.longitude = longitude;
+    }
+
+    public String getLocationtime() {
+        return locationtime;
+    }
+
+    public void setLocationtime(String locationtime) {
+        this.locationtime = locationtime;
+    }
 
     long userId;
 
