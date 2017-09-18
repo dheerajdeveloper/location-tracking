@@ -19,6 +19,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,8 +37,10 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -129,6 +132,9 @@ public class MainActivity extends AppCompatActivity {
     private String mLongitudeLabel;
     private String mLastUpdateTimeLabel;
 
+    private Button mStopUpdatesButton;
+
+
     /**
      * The formatted location address.
      */
@@ -148,11 +154,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mRequestingLocationUpdates = false;
+        mRequestingLocationUpdates = true;
         mResultReceiver = new AddressResultReceiver(new Handler());
 
         mLocationAddressTextView = (TextView) findViewById(R.id.textView6);
-
+        mStopUpdatesButton = (Button) findViewById(R.id.button);
 
         // Set labels.
         mLatitudeLabel = getResources().getString(R.string.latitude_label);
@@ -167,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
         createLocationCallback();
         createLocationRequest();
         buildLocationSettingsRequest();
+        startIntentService();
     }
 
 
@@ -206,18 +213,11 @@ public class MainActivity extends AppCompatActivity {
 
                 mCurrentLocation = locationResult.getLastLocation();
                 mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-                updateLocationUI();
+                mStopUpdatesButton.setEnabled(true);
                 new HttpRequestTask().execute();
             }
         };
     }
-
-    /**
-     * Sets the value of the UI fields for the location latitude, longitude and last update time.
-     */
-    private void updateLocationUI() {
-    }
-
 
     @Override
     public void onResume() {
@@ -229,7 +229,6 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions();
         }
 
-        updateUI();
     }
 
 
@@ -262,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
                         mFusedLocationClient.requestLocationUpdates(mLocationRequest,
                                 mLocationCallback, Looper.myLooper());
 
-                        updateUI();
+                        mStopUpdatesButton.setEnabled(true);
                         new HttpRequestTask().execute();
                     }
                 })
@@ -291,14 +290,8 @@ public class MainActivity extends AppCompatActivity {
                                 mRequestingLocationUpdates = false;
                         }
 
-                        updateUI();
                     }
                 });
-    }
-
-    private void updateUI() {
-//        setButtonsEnabledState();
-        updateLocationUI();
     }
 
     /**
@@ -314,9 +307,41 @@ public class MainActivity extends AppCompatActivity {
 
         System.out.println("In start sending location");
 
-        startLocationUpdates();
+        if (!mRequestingLocationUpdates) {
+            startLocationUpdates();
+        }
 
 
+    }
+
+
+    public void stopSendingLocation(View view) {
+
+        System.out.println("In start sending location");
+
+        if (mRequestingLocationUpdates) {
+            stopLocationUpdates();
+        }
+
+    }
+
+    private void stopLocationUpdates() {
+        if (!mRequestingLocationUpdates) {
+            Log.d(TAG, "stopLocationUpdates: updates never requested, no-op.");
+            return;
+        }
+
+        // It is a good practice to remove location requests when the activity is in a paused or
+        // stopped state. Doing so helps battery performance and is especially
+        // recommended in applications that request frequent location updates.
+        mFusedLocationClient.removeLocationUpdates(mLocationCallback)
+                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        mRequestingLocationUpdates = false;
+                        mStopUpdatesButton.setEnabled(false);
+                    }
+                });
     }
 
 
@@ -331,16 +356,16 @@ public class MainActivity extends AppCompatActivity {
                         Double.toString(mCurrentLocation.getLongitude()),
                         DateUtil.getCurrentTimeInIsoFormat());
 
-                if(prevUpdatedLocation != null &&
+                if (prevUpdatedLocation != null &&
                         prevUpdatedLocation.getLatitude() == mCurrentLocation.getLatitude() &&
-                        prevUpdatedLocation.getLongitude() == mCurrentLocation.getLongitude()){
+                        prevUpdatedLocation.getLongitude() == mCurrentLocation.getLongitude()) {
                     return locationModel;
                 }
 
                 final String url = "http://35.154.229.180:8090/user-registration/location/add";
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-                locationModel =  restTemplate.postForObject(url,
+                locationModel = restTemplate.postForObject(url,
                         locationModel,
                         LocationModel.class);
                 prevUpdatedLocation = mCurrentLocation;
@@ -405,7 +430,7 @@ public class MainActivity extends AppCompatActivity {
 
             // Show a toast message if an address was found.
             if (resultCode == Constants.SUCCESS_RESULT) {
-                showToast(getString(R.string.address_found));
+//                showToast(getString(R.string.address_found));
             }
 
             // Reset. Enable the Fetch Address button and stop showing the progress bar.
@@ -569,6 +594,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, PathMapsActivity.class);
         startActivity(intent);
     }
+
     public void showNMinsPath(View view) {
         Intent intent = new Intent(this, NMinsMapsActivity.class);
         EditText editText = (EditText) findViewById(R.id.editText2);
