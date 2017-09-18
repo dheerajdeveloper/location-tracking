@@ -1,6 +1,7 @@
 package com.example.dheeraj.location_tracking;
 
 import android.graphics.Color;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -21,11 +22,13 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 
-public class PathMapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class PathMapsActivity extends FragmentActivity implements OnMapReadyCallback
+        , GoogleMap.OnMapClickListener {
 
     private GoogleMap mMap;
 
     private static final int DEFAULT_ZOOM = 15;
+    PolylineOptions lineOptions;
 
 
     @Override
@@ -36,6 +39,8 @@ public class PathMapsActivity extends FragmentActivity implements OnMapReadyCall
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+
     }
 
 
@@ -56,9 +61,43 @@ public class PathMapsActivity extends FragmentActivity implements OnMapReadyCall
         LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+
+        mMap.setOnMapClickListener(this);
+
         new ParserTask().execute();
+
+
     }
 
+    @Override
+    public void onMapClick(LatLng var1) {
+        Location clickedLocation = new Location("clickedLocation");
+        clickedLocation.setLatitude(var1.latitude);
+        clickedLocation.setLongitude(var1.longitude);
+
+        Float minDistance = Float.MAX_VALUE;
+        LatLng nearestPoint = var1;
+        for (LatLng val : lineOptions.getPoints()) {
+
+            Location pointLocation = new Location("pointLocation");
+            pointLocation.setLatitude(val.latitude);
+            pointLocation.setLongitude(val.longitude);
+
+            float distance = clickedLocation.distanceTo(pointLocation);
+            if (distance < minDistance) {
+                minDistance = distance;
+                nearestPoint = val;
+            }
+
+        }
+        mMap.addMarker(new MarkerOptions()
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
+                .position(nearestPoint)
+                .title("Clicked Location"));
+
+        System.out.println(var1);
+
+    }
 
     /**
      * A class to parse the Google Places in JSON format
@@ -103,7 +142,6 @@ public class PathMapsActivity extends FragmentActivity implements OnMapReadyCall
             mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
             ArrayList points;
-            PolylineOptions lineOptions;
 
             points = new ArrayList();
             lineOptions = new PolylineOptions();
@@ -138,6 +176,8 @@ public class PathMapsActivity extends FragmentActivity implements OnMapReadyCall
             mMap.addMarker(new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)).position(startLocation).title("Start Location"));
             mMap.addMarker(new MarkerOptions().position(endLocation).title("End Location"));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(endLocation, DEFAULT_ZOOM));
+
+
         }
     }
 }

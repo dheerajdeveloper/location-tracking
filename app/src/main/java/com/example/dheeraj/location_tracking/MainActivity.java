@@ -189,6 +189,9 @@ public class MainActivity extends AppCompatActivity {
         // application will never receive updates faster than this value.
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
 
+        mLocationRequest.setSmallestDisplacement(25);
+
+
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
